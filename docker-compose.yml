@@ -1,5 +1,5 @@
 services:
-  walletpayb:
+  walletpay:
     image: postgres:16-alpine
     container_name: walletpay-db
     environment:
