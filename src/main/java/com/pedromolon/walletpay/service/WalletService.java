@@ -4,6 +4,8 @@ import com.pedromolon.walletpay.dto.DepositRequestDTO;
 import com.pedromolon.walletpay.dto.TransactionResponseDTO;
 import com.pedromolon.walletpay.dto.TransferRequestDTO;
 import com.pedromolon.walletpay.dto.WalletBalancerResponseDTO;
+import com.pedromolon.walletpay.exception.BusinessRuleException;
+import com.pedromolon.walletpay.exception.ResourceNotFoundException;
 import com.pedromolon.walletpay.model.Transaction;
 import com.pedromolon.walletpay.model.TransactionType;
 import com.pedromolon.walletpay.model.Wallet;
@@ -31,14 +33,14 @@ public class WalletService {
     @Transactional
     public WalletBalancerResponseDTO deposit(DepositRequestDTO request, Long userId) {
         if (request.amount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Invalid deposit amount");
+            throw new BusinessRuleException("Invalid deposit amount");
         }
 
         Wallet wallet = walletRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Wallet not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Wallet not found"));
 
         if (Boolean.TRUE.equals(wallet.getBlocked())) {
-            throw new IllegalArgumentException("Wallet is blocked");
+            throw new BusinessRuleException("Wallet is blocked");
         }
 
         wallet.setBalance(wallet.getBalance().add(request.amount()));
@@ -66,29 +68,29 @@ public class WalletService {
     @Transactional
     public TransactionResponseDTO transfer(TransferRequestDTO request, Long senderId) {
         if (request.amount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Invalid amount");
+            throw new BusinessRuleException("Invalid amount");
         }
 
         if (senderId.equals(request.recipientId())) {
-            throw new IllegalArgumentException("Sender and receiver cannot be the same");
+            throw new BusinessRuleException("Sender and receiver cannot be the same");
         }
 
         Wallet senderWallet = walletRepository.findByUserId(senderId)
-                .orElseThrow(() -> new IllegalArgumentException("Sender wallet not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Sender wallet not found"));
 
         Wallet recipientWallet = walletRepository.findByUserId(request.recipientId())
-                .orElseThrow(() -> new IllegalArgumentException("Recipient wallet not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Recipient wallet not found"));
 
         if (Boolean.TRUE.equals(senderWallet.getBlocked())) {
-            throw new IllegalArgumentException("Sender wallet is blocked");
+            throw new BusinessRuleException("Sender wallet is blocked");
         }
 
         if (Boolean.TRUE.equals(recipientWallet.getBlocked())) {
-            throw new IllegalArgumentException("Recipient wallet is blocked");
+            throw new BusinessRuleException("Recipient wallet is blocked");
         }
 
         if (senderWallet.getBalance().compareTo(request.amount()) < 0) {
-            throw new IllegalArgumentException("Insufficient balance");
+            throw new BusinessRuleException("Insufficient balance");
         }
 
         senderWallet.setBalance(senderWallet.getBalance().subtract(request.amount()));
@@ -125,7 +127,7 @@ public class WalletService {
     @Transactional(readOnly = true)
     public BigDecimal getBalance(Long userId) {
         Wallet wallet = walletRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Wallet not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Wallet not found"));
 
         return wallet.getBalance();
     }
@@ -133,7 +135,7 @@ public class WalletService {
     @Transactional(readOnly = true)
     public Page<TransactionResponseDTO> getStatement(Long userId, Pageable pageable) {
         Wallet wallet = walletRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Wallet not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Wallet not found"));
 
         return transactionRepository.findAllByWalletId(wallet.getId(), pageable)
                 .map(transaction -> TransactionResponseDTO.builder()
