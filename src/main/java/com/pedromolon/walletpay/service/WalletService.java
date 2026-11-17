@@ -29,12 +29,12 @@ public class WalletService {
     }
 
     @Transactional
-    public WalletBalancerResponseDTO deposit(DepositRequestDTO request) {
+    public WalletBalancerResponseDTO deposit(DepositRequestDTO request, Long userId) {
         if (request.amount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Invalid deposit amount");
         }
 
-        Wallet wallet = walletRepository.findByUserId(request.userId())
+        Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Wallet not found"));
 
         if (Boolean.TRUE.equals(wallet.getBlocked())) {
@@ -64,16 +64,16 @@ public class WalletService {
     }
 
     @Transactional
-    public TransactionResponseDTO transfer(TransferRequestDTO request) {
+    public TransactionResponseDTO transfer(TransferRequestDTO request, Long senderId) {
         if (request.amount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Invalid amount");
         }
 
-        if (request.senderId().equals(request.recipientId())) {
+        if (senderId.equals(request.recipientId())) {
             throw new IllegalArgumentException("Sender and receiver cannot be the same");
         }
 
-        Wallet senderWallet = walletRepository.findByUserId(request.senderId())
+        Wallet senderWallet = walletRepository.findByUserId(senderId)
                 .orElseThrow(() -> new IllegalArgumentException("Sender wallet not found"));
 
         Wallet recipientWallet = walletRepository.findByUserId(request.recipientId())
