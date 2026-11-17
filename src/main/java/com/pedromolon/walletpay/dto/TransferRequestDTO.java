@@ -6,9 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record TransferRequestDTO(
-        @NotNull(message = "Sender ID is required")
-        Long senderId,
-
         @NotNull(message = "Recipient ID is required")
         Long recipientId,
 
