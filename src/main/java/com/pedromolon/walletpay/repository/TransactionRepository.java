@@ -13,10 +13,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query("""
         SELECT t FROM Transaction t
-        WHERE t.senderWallet.id = :walletId
-            OR t.recipientWallet.id = :walletId
+        WHERE (t.type = 'TRANSFER_OUT' AND t.senderWallet.id = :walletId)
+           OR (t.type IN ('DEPOSIT', 'TRANSFER_IN') AND t.recipientWallet.id = :walletId)
         ORDER BY t.createdAt DESC
-        """)
+    """)
     Page<Transaction> findAllByWalletId(@Param("walletId") Long walletId, Pageable pageable);
 
 }
