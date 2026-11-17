@@ -4,6 +4,7 @@ import com.pedromolon.walletpay.dto.LoginRequestDTO;
 import com.pedromolon.walletpay.dto.LoginResponseDTO;
 import com.pedromolon.walletpay.dto.RegisterRequestDTO;
 import com.pedromolon.walletpay.dto.RegisterResponseDTO;
+import com.pedromolon.walletpay.exception.BusinessRuleException;
 import com.pedromolon.walletpay.model.Role;
 import com.pedromolon.walletpay.model.User;
 import com.pedromolon.walletpay.repository.RoleRepository;
@@ -34,7 +35,7 @@ public class AuthService {
     @Transactional
     public RegisterResponseDTO register(RegisterRequestDTO request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new RuntimeException("Email already exists");
+            throw new BusinessRuleException("Email already exists");
         }
 
         Optional<Role> role = roleRepository.findByName("ROLE_USER");
