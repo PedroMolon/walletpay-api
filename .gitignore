@@ -34,3 +34,6 @@ build/
 
 ### ENV ###
 .env
+
+### RSA KEYS ###
+src/main/resources/certs/**
