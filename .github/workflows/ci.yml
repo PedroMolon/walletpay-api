@@ -17,6 +17,12 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Verify Docker access
+        run: |
+          docker version
+          docker info
+          ls -la /var/run/docker.sock
+
       - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
@@ -29,7 +35,9 @@ jobs:
 
       - name: Build and test
         env:
-          TESTCONTAINERS_RYUK_DISABLED: "true"
-          TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: "/var/run/docker.sock"
           MAVEN_OPTS: "-Xmx2g -XX:MaxMetaspaceSize=512m"
-        run: ./mvnw clean verify
+        run: |
+          ./mvnw clean verify \
+            -Dtestcontainers.ryuk.disabled=true \
+            -Dtestcontainers.docker.socket.override=/var/run/docker.sock \
+            -Dorg.testcontainers.docker.socket.override=/var/run/docker.sock
