@@ -9,6 +9,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -40,4 +41,5 @@ jobs:
           ./mvnw clean verify \
             -Dtestcontainers.ryuk.disabled=true \
             -Dtestcontainers.docker.socket.override=/var/run/docker.sock \
-            -Dorg.testcontainers.docker.socket.override=/var/run/docker.sock
+            -Dorg.testcontainers.docker.socket.override=/var/run/docker.sock \
+            --batch-mode
